@@ -58,5 +58,5 @@ cd jstache
 /etc/init.d/jstached {start|stop|restart|force-reload|status}
 ```
 
-##### Cool! Should I use this?
-* No
+### FAQ: Should I use this? Is it safe for production?
+* No, you should use Logstash
