@@ -2,15 +2,12 @@
 &nbsp;&nbsp; { "jstache" }
 =======
 
-JStache is a minimalistic/dumb TCP to HTTP Proxy specialized for wrapping bare JSON with meta headers required for Bulk indexing at your favourite Elasticsearch cluster.
+JStache is a minimalistic/dumb TCP to HTTP Proxy specialized for wrapping bare JSON with meta headers required for Bulk indexing at your favourite Elasticsearch cluster. For anything serious, please do use Logstash.
 
 ---------------------
 
-* {WILD JSON} * ---> [TCP]:__[jstache]__:[HTTP] ---> *ElasticSearch/_Bulk*
+* {WILD JSON}  ---> [TCP]::__[jstache]__::[HTTP] ---> *ElasticSearch/_Bulk*
 
----------------------
-
-##### __NOTE: Alpha Tool, Work in Progress (at best) do not use for anything serious__
 ---------------------
 
 ##### Requirements:
