@@ -62,5 +62,10 @@ cd jstache
 
 ---------------------
 
-### FAQ: Should I use this? Is it safe for production?
+### FAQ: 
+##### Should I use this? 
 * No, you should use Logstash
+##### Is it safe for production?
+* No, you should use Logstash
+* ##### Does it really work?
+* It works great, but you should use Logstash
