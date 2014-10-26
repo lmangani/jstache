@@ -16,7 +16,9 @@ JStache is a minimalistic/dumb TCP to HTTP Proxy specialized for wrapping bare J
 * Maven2 & Java
 
 ##### What does this do?
-Not much. The proxy expects raw JSON ingress via TCP Socket and pushes out ES-Wrapped JSON 
+Not much. 
+
+The proxy expects JSON ingress via TCP and pushes out ES-Meta ready JSON via HTTP
 
 
 Example TCP IN:
