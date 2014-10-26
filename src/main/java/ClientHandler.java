@@ -141,16 +141,38 @@ public class ClientHandler implements Runnable {
         String line;
         String message = "";
         try {
-            while ((line = in.readLine()) != null) {
-                message += line + "\n";
+            while ((line = in.readLine()) != null ) {
+		//System.out.print("LINE: "+line);
+                message = line + "\n";
+
+		// Work Socket Line-by-Line
+	        if (!message.isEmpty()) {
+	            System.out.println("Received JSON: " + message + "\n");
+
+		    // No @timestamp? No @problem! TODO: add as optional in config
+		    if (!message.toLowerCase().contains("@timestamp")) {
+		    	String dateStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
+		    	message = message.startsWith("{") ? "{\"@timestamp\":\""+dateStr+"\","+message.substring(1) : message;
+		    }
+
+	            // System.out.println("Sending to web server ... ");
+	            sendToWebServer(message);
+	        }
+	        else {
+	            System.out.println("String is empty\n");
+	        }
+
+
             }
         }
         catch (IOException e) {
             System.err.println(e);
+	    disconnect();
         }
 
+	/*
         if (!message.isEmpty()) {
-            // System.out.println("Received JSON: " + message + "\n");
+            System.out.println("Received JSON: " + message + "\n");
 
 	    // No @timestamp? No @problem! TODO: add as optional in config
 	    if (!message.toLowerCase().contains("@timestamp")) {
@@ -164,6 +186,8 @@ public class ClientHandler implements Runnable {
         else {
             System.out.println("Message is empty\n");
         }
+	*/
+
         disconnect();
     }
 
@@ -173,9 +197,6 @@ public class ClientHandler implements Runnable {
      */
     private void sendToWebServer(String message) {
         try {
-            // Encode the message to URLEncoded format
-            // String newJson = "message=" + URLEncoder.encode(message, "UTF-8");
-
             // Prepend the message with JSON indexing for ES
 	    String dateNow = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
             String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\" }}\n" + message;
@@ -212,7 +233,7 @@ public class ClientHandler implements Runnable {
                 result += inputLine + "\n";
             }
             in.close();
-            // System.out.print("HTTP request sent with result: " + result);
+            System.out.print("HTTP request sent with result: " + result);
 
             connection.disconnect();
         }
