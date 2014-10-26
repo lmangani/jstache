@@ -92,13 +92,13 @@ public class Server {
         }
 
         // Accept client connections
-        logger.log(Level.INFO,"Awaiting client connection ...\n");
+        logger.log(Level.INFO,"Jstash UP & Awaiting client connections... \n");
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
 
                 // Run separate thread for client handler
-                new ClientHandler(clientSocket, config.getProperty("handler.url"), config.getProperty("handler.http_user"), config.getProperty("handler.http_pass"));
+                new ClientHandler(clientSocket, config.getProperty("handler.url"), config.getProperty("handler.http_user"), config.getProperty("handler.http_pass"), config.getProperty("es.index"), config.getProperty("es.type"));
             }
             catch (IOException e) {
                 System.err.println(e);
