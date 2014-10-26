@@ -32,8 +32,8 @@ public class ClientHandler implements Runnable {
     /**
      * Elasticsearch Index & Type for BULK inserts
      */
-    private String esIndex = 'jstash';
-    private String esType  = 'json';
+    public String es_index;
+    public String es_type;
     
     /**
      * Client socket IN-buffer.
@@ -55,7 +55,7 @@ public class ClientHandler implements Runnable {
      * @param clientSocket client socket.
      * @param url 	Web-server URL.
      */
-    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass, String esIndex, String esType) {
+    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass, String es_index, String es_type) {
 
         this.clientSocket = clientSocket;
         this.url = url;
@@ -63,6 +63,10 @@ public class ClientHandler implements Runnable {
 	// Optional HTTP Basic Auth
         this.http_user = http_user;
         this.http_pass = http_pass;
+
+	// ES Index and Type
+        this.es_index = es_index;
+        this.es_type  = es_type;
 
         System.out.println("Client connected with Address " + clientSocket.getInetAddress().toString() + " on port: " + clientSocket.getPort() + "\n");
 
@@ -163,7 +167,7 @@ public class ClientHandler implements Runnable {
 
             // Prepend the message with JSON indexing for ES
 	    String dateNow = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-            String newJson = "{\"index\":{\"_index\":\"" +esIndex+ "-" + dateNow + "\",\"_type\":\""+esType+""\"}}\n" + message;
+            String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\"}}\n" + message;
 
             URL webServerUrl = new URL(url);
             HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();

@@ -97,6 +97,7 @@ public class Server {
             try {
                 Socket clientSocket = serverSocket.accept();
 
+        	logger.log(Level.INFO,"Shipping packet to ES index: " + config.getProperty("es.index") +" type: "+ config.getProperty("es.type") );
                 // Run separate thread for client handler
                 new ClientHandler(clientSocket, config.getProperty("handler.url"), config.getProperty("handler.http_user"), config.getProperty("handler.http_pass"), config.getProperty("es.index"), config.getProperty("es.type"));
             }
