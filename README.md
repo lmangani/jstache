@@ -5,7 +5,7 @@ jstache
 Minimalistic/Dumb TCP to HTTP Proxy 
 Intended for JSON/Elasticsearch _Bulk API Conversions
 
-(WILD JSON) --> TCP:[jstache]:HTTP --> ElasticSearch/_Bulk
+*(WILD JSON)* --> TCP:__[jstache]__:HTTP --> *ElasticSearch/_Bulk*
 
 ---------------------
 
