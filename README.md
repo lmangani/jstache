@@ -10,6 +10,8 @@ JStache is a minimalistic/dumb TCP to HTTP Proxy specialized for wrapping bare J
 
 ---------------------
 
+
+
 ##### Requirements:
 * Maven2 & Java
 
@@ -55,3 +57,6 @@ cd jstache
 ```
 /etc/init.d/jstached {start|stop|restart|force-reload|status}
 ```
+
+##### Cool! Should I use this?
+* No
