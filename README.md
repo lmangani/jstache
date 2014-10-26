@@ -16,7 +16,7 @@ Intended for JSON/Elasticsearch _Bulk API Conversions
 * Maven2 & Java
 
 ##### What does this do?
-Not much. The proxy expects raw JSON ingress via TCP Socket and pushes out ES-Wrapped JSON (with Optional HTTP Basic Auth)
+Not much. The proxy expects raw JSON ingress via TCP Socket and pushes out ES-Wrapped JSON 
 
 Example TCP IN:
 ```
