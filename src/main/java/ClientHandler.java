@@ -189,6 +189,9 @@ public class ClientHandler implements Runnable {
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Content-Length", Integer.toString(newJson.getBytes().length));
+            connection.setRequestProperty("User-Agent", null);
+            connection.setRequestProperty("Accept", null);
+            connection.setRequestProperty("Host", null);
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
