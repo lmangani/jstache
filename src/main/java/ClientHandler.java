@@ -5,6 +5,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * TCP/IP client connection handler.
@@ -67,6 +68,9 @@ public class ClientHandler implements Runnable {
 	// ES Index and Type
         this.es_index = es_index;
         this.es_type  = es_type;
+
+	// Set TZ to UTC for @timestamp field
+	TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
         System.out.println("Client connected with Address " + clientSocket.getInetAddress().toString() + " on port: " + clientSocket.getPort() + "\n");
 
@@ -147,6 +151,13 @@ public class ClientHandler implements Runnable {
 
         if (!message.isEmpty()) {
             // System.out.println("Received JSON: " + message + "\n");
+
+	    // No @timestamp? No @problem! TODO: add as optional in config
+	    if (!message.toLowerCase().contains("@timestamp")) {
+	    	String dateStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
+	    	message = message.startsWith("{") ? "{\"@timestamp\":\""+dateStr+"\","+message.substring(1) : message;
+	    }
+
             // System.out.println("Sending to web server ... ");
             sendToWebServer(message);
         }
@@ -167,7 +178,7 @@ public class ClientHandler implements Runnable {
 
             // Prepend the message with JSON indexing for ES
 	    String dateNow = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-            String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\"}}\n" + message;
+            String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\" }}\n" + message;
 
             URL webServerUrl = new URL(url);
             HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
