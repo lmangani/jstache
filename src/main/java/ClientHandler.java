@@ -5,10 +5,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 /**
  * TCP/IP client connection handler.
@@ -34,6 +30,12 @@ public class ClientHandler implements Runnable {
     private String http_pass;
 
     /**
+     * Elasticsearch Index & Type for BULK inserts
+     */
+    private String esIndex = 'jstash';
+    private String esType  = 'json';
+    
+    /**
      * Client socket IN-buffer.
      */
     private BufferedReader in;
@@ -48,29 +50,12 @@ public class ClientHandler implements Runnable {
      */
     private Thread runningThread;
 
-    private static Logger logger = Logger.getLogger("jstache");
-
     /**
      * Construct.
      * @param clientSocket client socket.
      * @param url 	Web-server URL.
      */
-    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass) {
-
-	FileHandler fh;
-        try {
-              // This block configure the logger with handler and formatter
-              fh = new FileHandler("/var/log/jstache/jstache.log", true);
-              logger.addHandler(fh);
-              logger.setLevel(Level.ALL);
-              SimpleFormatter formatter = new SimpleFormatter();
-              fh.setFormatter(formatter);
-            } catch (SecurityException e) {
-              e.printStackTrace();
-            } catch (IOException e) {
-              e.printStackTrace();
-        }
-
+    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass, String esIndex, String esType) {
 
         this.clientSocket = clientSocket;
         this.url = url;
@@ -79,25 +64,24 @@ public class ClientHandler implements Runnable {
         this.http_user = http_user;
         this.http_pass = http_pass;
 
-        logger.log(Level.INFO,"Client connected with Address " + clientSocket.getInetAddress().toString() + " on port: " + clientSocket.getPort() + "\n");
+        System.out.println("Client connected with Address " + clientSocket.getInetAddress().toString() + " on port: " + clientSocket.getPort() + "\n");
 
         try {
-            // logger.log(Level.INFO,"Initializing socket buffers size ... ");
+            // System.out.println("Initializing socket buffers size ... ");
             clientSocket.setReceiveBufferSize(2);
             clientSocket.setSendBufferSize(2);
 
-            // logger.log(Level.INFO,"Initializing input buffer ... ");
+            // System.out.println("Initializing input buffer ... ");
             in  = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-            // logger.log(Level.INFO,"Initializing output buffer ... ");
+            // System.out.println("Initializing output buffer ... ");
             out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-            // logger.log(Level.INFO,"Starting handler thread ... ");
+            // System.out.println("Starting handler thread ... ");
             runningThread = new Thread(this);
             runningThread.start();
         }
         catch (Exception e) {
-            logger.log(Level.INFO,"DISCONNECT: "+e);
             System.err.println(e);
             disconnect();
         }
@@ -108,7 +92,7 @@ public class ClientHandler implements Runnable {
      * Interrupts handler thread, closes buffers and disconnects client.
      */
     private void disconnect() {
-        logger.log(Level.INFO,"Disconnecting ... ");
+        System.out.println("Disconnecting ... ");
         if (runningThread != null) {
             runningThread.interrupt();
             runningThread = null;
@@ -146,7 +130,6 @@ public class ClientHandler implements Runnable {
      */
     @Override
     public void run() {
-        // logger.log(Level.INFO,"Reading input buffer ... ");
         String line;
         String message = "";
         try {
@@ -159,12 +142,12 @@ public class ClientHandler implements Runnable {
         }
 
         if (!message.isEmpty()) {
-            // logger.log(Level.INFO,"Received JSON: " + message + "\n");
-            // logger.log(Level.INFO,"Sending to web server ... ");
+            // System.out.println("Received JSON: " + message + "\n");
+            // System.out.println("Sending to web server ... ");
             sendToWebServer(message);
         }
         else {
-            logger.log(Level.INFO,"Message is empty\n");
+            System.out.println("Message is empty\n");
         }
         disconnect();
     }
@@ -176,13 +159,11 @@ public class ClientHandler implements Runnable {
     private void sendToWebServer(String message) {
         try {
             // Encode the message to URLEncoded format
-            // String urlParameters = "message=" + URLEncoder.encode(message, "UTF-8");
+            // String newJson = "message=" + URLEncoder.encode(message, "UTF-8");
 
             // Prepend the message with JSON indexing for ES
 	    String dateNow = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-            String newJson = "{\"index\":{\"_index\":\"nprobe-" + dateNow + "\",\"_type\":\"nProbe\"}}\n" + message;
-
-	    // logger.log(Level.INFO,newJson);
+            String newJson = "{\"index\":{\"_index\":\"" +esIndex+ "-" + dateNow + "\",\"_type\":\""+esType+""\"}}\n" + message;
 
             URL webServerUrl = new URL(url);
             HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
@@ -216,12 +197,12 @@ public class ClientHandler implements Runnable {
                 result += inputLine + "\n";
             }
             in.close();
-            // logger.log(Level.INFO,"HTTP request sent with result: " + result);
+            // System.out.print("HTTP request sent with result: " + result);
 
             connection.disconnect();
         }
         catch (Exception e) {
-            logger.log(Level.INFO,"ERROR: "+e);
+            System.err.println(e);
         }
     }
 }
