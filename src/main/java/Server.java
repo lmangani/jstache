@@ -37,9 +37,9 @@ public class Server {
             config.load(new FileInputStream("config.properties"));
         }
         catch (IOException e) {
-            logger.log(Level.INFO,"error:\n");
+            // logger.log(Level.INFO,"error:\n");
             System.out.println(e);
-            // logger.log(Level.INFO,"Loading default config ... ");
+            logger.log(Level.INFO,"User config not found, Loading default config ... ");
             try {
                 config.load(Server.class.getClassLoader().getResourceAsStream("config.properties"));
             }
