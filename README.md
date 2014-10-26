@@ -18,13 +18,25 @@ Intended for JSON/Elasticsearch _Bulk API Conversions
 ##### What does this do?
 Not much. The proxy expects raw JSON ingress via TCP Socket and pushes out ES-Wrapped JSON 
 
+
 Example TCP IN:
 ```
 { "element":"stronzio", "atomic":38 }
 ```
 Example HTTP OUT:
 ```
-{"index":{"_index":"nprobe-2014.10.262014.10.26","_type":"nProbe"}}
+POST /_bulk HTTP/1.1.
+Content-Type: application/json.
+Authorization: Basic **********************************.
+Cache-Control: no-cache.
+Pragma: no-cache.
+Connection: keep-alive.
+Content-Length: 102.
+.
+
+##
+T 127.0.0.1:34952 -> 127.0.0.1:19200 [AP]
+{"index":{"_index":"nprobe-2014.10.26","_type":"nProbe"}}
 { "element":"stronzio", "atomic":38 }
 ```
 
