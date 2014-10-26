@@ -8,7 +8,7 @@ For anything serious, please do use Logstash.
 
 ---------------------
 
-* {WILD JSON}  ---> [TCP]::__[jstache]__::[HTTP] ---> *ElasticSearch/_Bulk*
+* {WILD JSON}  ---> [TCP]::__{ jstache }__::[HTTP] ---> *ElasticSearch/_Bulk*
 
 ---------------------
 
