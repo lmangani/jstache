@@ -1,0 +1,103 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          jstached
+# Required-Start:    $local_fs $network $named $remote_fs $syslog $time
+# Required-Stop:     $local_fs $network $named $remote_fs $syslog $time
+# Default-Start:     
+# Default-Stop:      
+# Short-Description: JStache
+# Description:       JStache: a raw json to elasticsearch helper
+### END INIT INFO
+
+set -e
+
+VERSION=1.0-SNAPSHOT
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DESC="jstache daemon"
+NAME="jstached"
+INSTALL_DIR=/usr/lib/jstache-$VERSION
+USER="nobody"
+HOME="/tmp/"
+CP="$INSTALL_DIR/conf/:$INSTALL_DIR/jstache-$VERSION.jar"
+MAIN="Server"
+ARGS=""
+
+DAEMON="/usr/bin/java -Dcom.sun.management.jmxremote -Djava.awt.headless=true -server -classpath $CP $MAIN $ARGS"
+PIDFILE=/var/run/jstache/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+running_my_pid=`cat $PIDFILE 2>/dev/null` || true
+daemon_is_running() {
+	[ -f $PIDFILE -a /proc/"$running_my_pid"/exe -ef /usr/bin/java ]
+}
+
+# Gracefully exit if the package has been removed.
+test -x /usr/bin/java || exit 0
+
+# ---------------------------------------
+# Function that starts the daemon/service
+# ---------------------------------------
+d_start() {
+	if daemon_is_running ; then
+		echo "PID file $PIDFILE already exists."
+		echo "Abort."
+		echo ""
+	else
+		echo "Starting $DESC: $NAME"
+		su -p -s /bin/sh -c "$DAEMON 2> /dev/null > /dev/null & echo \$! >$PIDFILE" $USER
+		echo ""
+	fi
+}
+
+# --------------------------------------
+# Function that stops the daemon/service
+# --------------------------------------
+d_stop() {
+	if [ -e "$PIDFILE" ]; then
+		echo "Stopping $DESC: $NAME"
+		if [ -x start-stop-daemon ]; then
+		start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE
+		else
+			for pid in `cat $PIDFILE`
+          		do kill -9 $pid
+        		done
+		fi
+		echo ""
+		rm $PIDFILE
+	else
+		echo "PID file $PIDFILE does not exist."
+		echo "Abort"
+		echo ""
+	fi
+}
+
+case "$1" in
+	start)
+		d_start
+		;;
+	stop)
+		d_stop
+		;;
+	restart|force-reload)
+		echo "Restarting $DESC: $NAME"
+		d_stop
+		sleep 3
+		d_start
+		;;
+	status)
+		if daemon_is_running ; then
+			echo "Daemon is running at $running_my_pid";
+			exit 0;
+		else
+			echo "Daemon is not running";
+			exit 1;
+		fi
+		;;
+	*)
+		echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload|status}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
+

@@ -1,4 +1,5 @@
 jstache
 =======
 
-Minimalistic TCP to HTTP Proxy for JSON/Elasticsearch _Bulk API
+Minimalistic RAW TCP to HTTP Proxy for JSON/Elasticsearch _Bulk API
+
