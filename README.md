@@ -33,13 +33,13 @@ Authorization: Basic **********************************.
 Cache-Control: no-cache.
 Pragma: no-cache.
 Connection: keep-alive.
-Content-Length: 102.
+Content-Length: 132.
 .
 
 ##
 T 127.0.0.1:34952 -> 127.0.0.1:19200 [AP]
 {"index":{"_index":"nprobe-2014.10.26","_type":"nProbe"}}
-{ "element":"stronzio", "atomic":38 }
+{ "@timestamp":"2014-10-26T21:05:01.029Z", "element":"stronzio", "atomic":38 }
 ```
 
 ### Installation:
