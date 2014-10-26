@@ -49,6 +49,18 @@ d_start() {
 	fi
 }
 
+d_start_debug() {
+	if daemon_is_running ; then
+		echo "PID file $PIDFILE already exists."
+		echo "Abort."
+		echo ""
+	else
+		echo "Starting $DESC: $NAME"
+		su -p -s /bin/sh -c "$DAEMON & echo \$! >$PIDFILE" $USER
+		echo ""
+	fi
+}
+
 # --------------------------------------
 # Function that stops the daemon/service
 # --------------------------------------
@@ -74,6 +86,9 @@ d_stop() {
 case "$1" in
 	start)
 		d_start
+		;;
+	debug)
+		d_start_debug
 		;;
 	stop)
 		d_stop
