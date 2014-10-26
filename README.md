@@ -1,5 +1,5 @@
 ![JStache](http://i.imgur.com/Lnmza1J.png)
-jstache
+&nbsp;&nbsp; { "jstache" }
 =======
 
 Minimalistic/Dumb TCP to HTTP Proxy 
