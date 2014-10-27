@@ -6,6 +6,8 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
+import org.eclipse.jetty.util.B64Code;
+import org.eclipse.jetty.util.StringUtil;
 
 /**
  * TCP/IP client connection handler.
@@ -143,25 +145,22 @@ public class ClientHandler implements Runnable {
         try {
             while ((line = in.readLine()) != null ) {
 		//System.out.print("LINE: "+line);
-                message = line + "\n";
+                message = line.trim() + "\n";
 
 		// Work Socket Line-by-Line
 	        if (!message.isEmpty()) {
-	            System.out.println("Received JSON: " + message + "\n");
-
-		    // No @timestamp? No @problem! TODO: add as optional in config
-		    if (!message.toLowerCase().contains("@timestamp")) {
+	            // System.out.println("Received JSON: " + message + "\n");
+		      // No @timestamp? No @problem! TODO: add as optional in config
+		      if (!message.contains("@timestamp")) {
 		    	String dateStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
 		    	message = message.startsWith("{") ? "{\"@timestamp\":\""+dateStr+"\","+message.substring(1) : message;
-		    }
-
+		      }
 	            // System.out.println("Sending to web server ... ");
 	            sendToWebServer(message);
 	        }
-	        else {
-	            System.out.println("String is empty\n");
-	        }
-
+	     //   else {
+	     //        System.out.println("String is empty\n");
+	     //   }
 
             }
         }
@@ -169,24 +168,6 @@ public class ClientHandler implements Runnable {
             System.err.println(e);
 	    disconnect();
         }
-
-	/*
-        if (!message.isEmpty()) {
-            System.out.println("Received JSON: " + message + "\n");
-
-	    // No @timestamp? No @problem! TODO: add as optional in config
-	    if (!message.toLowerCase().contains("@timestamp")) {
-	    	String dateStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
-	    	message = message.startsWith("{") ? "{\"@timestamp\":\""+dateStr+"\","+message.substring(1) : message;
-	    }
-
-            // System.out.println("Sending to web server ... ");
-            sendToWebServer(message);
-        }
-        else {
-            System.out.println("Message is empty\n");
-        }
-	*/
 
         disconnect();
     }
@@ -202,21 +183,26 @@ public class ClientHandler implements Runnable {
             String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\" }}\n" + message;
 
             URL webServerUrl = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
+            if(url.startsWith("https:")) {
+            	HttpsURLConnection connection = (HttpsURLConnection)webServerUrl.openConnection();
+            } else {
+            	HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
+            }
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Content-Length", Integer.toString(newJson.getBytes().length));
-            connection.setRequestProperty("User-Agent", null);
+            connection.setRequestProperty("User-Agent", "JStache");
             connection.setRequestProperty("Accept", null);
-            connection.setRequestProperty("Host", null);
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
 
 	    if (http_user != null && !http_user.isEmpty() ) {
-	    	String userAuth = http_user + ":" + http_pass;
-	    	String encoding = new sun.misc.BASE64Encoder().encode(userAuth.getBytes());
-	    	connection.setRequestProperty("Authorization", "Basic " + encoding);
+	    	// String userAuth = http_user + ":" + http_pass;
+	   	// String encoding = new sun.misc.BASE64Encoder().encode(userAuth.getBytes());
+	    	String encoding = StringUtil.__ISO_8859_1;
+          	String userAuth = B64Code.encode(http_user + ":" + http_pass, encoding);
+	    	connection.setRequestProperty("Authorization", "Basic " + userAuth);
 	    }
 
             // Send the message to the server
@@ -233,7 +219,7 @@ public class ClientHandler implements Runnable {
                 result += inputLine + "\n";
             }
             in.close();
-            System.out.print("HTTP request sent with result: " + result);
+            // System.out.print("HTTP request sent with result: " + result);
 
             connection.disconnect();
         }
