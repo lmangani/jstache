@@ -6,8 +6,9 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
-import org.eclipse.jetty.util.B64Code;
-import org.eclipse.jetty.util.StringUtil;
+import javax.net.ssl.HttpsURLConnection;
+// import org.eclipse.jetty.util.B64Code;
+// import org.eclipse.jetty.util.StringUtil;
 
 /**
  * TCP/IP client connection handler.
@@ -183,11 +184,7 @@ public class ClientHandler implements Runnable {
             String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\" }}\n" + message;
 
             URL webServerUrl = new URL(url);
-            if(url.startsWith("https:")) {
-            	HttpsURLConnection connection = (HttpsURLConnection)webServerUrl.openConnection();
-            } else {
-            	HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
-            }
+            HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Content-Length", Integer.toString(newJson.getBytes().length));
@@ -198,10 +195,10 @@ public class ClientHandler implements Runnable {
             connection.setDoOutput(true);
 
 	    if (http_user != null && !http_user.isEmpty() ) {
-	    	// String userAuth = http_user + ":" + http_pass;
-	   	// String encoding = new sun.misc.BASE64Encoder().encode(userAuth.getBytes());
-	    	String encoding = StringUtil.__ISO_8859_1;
-          	String userAuth = B64Code.encode(http_user + ":" + http_pass, encoding);
+	    	String pairAuth = http_user + ":" + http_pass;
+	   	String userAuth = new sun.misc.BASE64Encoder().encode(pairAuth.getBytes());
+	    	// String encoding = StringUtil.__ISO_8859_1;
+          	// String userAuth = B64Code.encode(http_user + ":" + http_pass, encoding);
 	    	connection.setRequestProperty("Authorization", "Basic " + userAuth);
 	    }
 
