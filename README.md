@@ -20,14 +20,14 @@ For anything serious, please do use Logstash.
 ##### What does this do?
 Not much. 
 
-The proxy expects JSON ingress via TCP and pushes out ES-Meta ready JSON via HTTP
+The proxy expects valid JSON ingress via TCP and pushes out ES-Meta ready JSON via HTTP
 
-
-Example TCP IN:
+---------------------
+*Example TCP IN:*
 ```
 { "element":"stronzio", "atomic":38 }
 ```
-Example HTTP OUT:
+*Example HTTP OUT:*
 ```
 POST /_bulk HTTP/1.1.
 Content-Type: application/json.
@@ -73,3 +73,6 @@ cd jstache
 
 ##### Does it really work?
 * It works great, but you should use Logstash
+
+##### Debug please?
+* set handler.debug to anything in /usr/lib/jstache-{$version}/conf/config.properties
