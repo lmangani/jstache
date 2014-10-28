@@ -6,9 +6,7 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
-import javax.net.ssl.HttpsURLConnection;
-// import org.eclipse.jetty.util.B64Code;
-// import org.eclipse.jetty.util.StringUtil;
+import java.util.Properties;
 
 /**
  * TCP/IP client connection handler.
@@ -25,19 +23,19 @@ public class ClientHandler implements Runnable {
     /**
      * Web-server URL.
      */
-    private String url;
+    private static String url;
 
     /**
      * Basic HTTP Auth.
      */
-    private String http_user;
-    private String http_pass;
+    private static String http_user;
+    private static String http_pass;
 
     /**
      * Elasticsearch Index & Type for BULK inserts
      */
-    public String es_index;
-    public String es_type;
+    public static String es_index;
+    public static String es_type;
     
     /**
      * Client socket IN-buffer.
@@ -54,20 +52,33 @@ public class ClientHandler implements Runnable {
      */
     private Thread runningThread;
 
+
+    /**
+     * Properties Handler
+     */
+    public static void configure(Properties properties)
+	{
+		url = properties.getProperty("handler.url", "http://127.0.0.1:9200/_bulk");
+		http_user = properties.getProperty("handler.http_user", "");
+		http_pass = properties.getProperty("handler.http_pass", "");
+		es_index  = properties.getProperty("es.index", "logstash");
+		es_type   = properties.getProperty("es.type", "jstache");
+	}
+
     /**
      * Construct.
      * @param clientSocket client socket.
      * @param url 	Web-server URL.
      */
-    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass, String es_index, String es_type) {
+//    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass, String es_index, String es_type) {
+    public ClientHandler(Socket clientSocket) {
 
         this.clientSocket = clientSocket;
+	// Bulk API Url
         this.url = url;
-
 	// Optional HTTP Basic Auth
         this.http_user = http_user;
         this.http_pass = http_pass;
-
 	// ES Index and Type
         this.es_index = es_index;
         this.es_type  = es_type;
@@ -156,6 +167,10 @@ public class ClientHandler implements Runnable {
 		    	String dateStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
 		    	message = message.startsWith("{") ? "{\"@timestamp\":\""+dateStr+"\","+message.substring(1) : message;
 		      }
+	              // Prepend the message with JSON indexing for ES Bulk indexing
+		      String dateNow = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
+	              message = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\" }}\n" + message;
+
 	            // System.out.println("Sending to web server ... ");
 	            sendToWebServer(message);
 	        }
@@ -179,15 +194,12 @@ public class ClientHandler implements Runnable {
      */
     private void sendToWebServer(String message) {
         try {
-            // Prepend the message with JSON indexing for ES
-	    String dateNow = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-            String newJson = "{\"index\":{\"_index\":\"" + es_index + "-" + dateNow + "\",\"_type\":\"" + es_type + "\" }}\n" + message;
 
             URL webServerUrl = new URL(url);
             HttpURLConnection connection = (HttpURLConnection)webServerUrl.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Content-Length", Integer.toString(newJson.getBytes().length));
+            connection.setRequestProperty("Content-Length", Integer.toString(message.getBytes().length));
             connection.setRequestProperty("User-Agent", "JStache");
             connection.setRequestProperty("Accept", null);
             connection.setUseCaches(false);
@@ -197,14 +209,12 @@ public class ClientHandler implements Runnable {
 	    if (http_user != null && !http_user.isEmpty() ) {
 	    	String pairAuth = http_user + ":" + http_pass;
 	   	String userAuth = new sun.misc.BASE64Encoder().encode(pairAuth.getBytes());
-	    	// String encoding = StringUtil.__ISO_8859_1;
-          	// String userAuth = B64Code.encode(http_user + ":" + http_pass, encoding);
 	    	connection.setRequestProperty("Authorization", "Basic " + userAuth);
 	    }
 
             // Send the message to the server
             DataOutputStream out = new DataOutputStream (connection.getOutputStream());
-            out.writeBytes(newJson);
+            out.writeBytes(message);
             out.flush();
             out.close();
 
@@ -216,7 +226,7 @@ public class ClientHandler implements Runnable {
                 result += inputLine + "\n";
             }
             in.close();
-            // System.out.print("HTTP request sent with result: " + result);
+            // System.out.print("HTTP result: " + result);
 
             connection.disconnect();
         }

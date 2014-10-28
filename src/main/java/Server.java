@@ -50,6 +50,8 @@ public class Server {
         }
 
         config.list(System.out);
+	// Push Properties
+	ClientHandler.configure(config);
         System.out.println();
     }
 
@@ -99,7 +101,8 @@ public class Server {
 
         	logger.log(Level.INFO,"Shipping packet to ES index: " + config.getProperty("es.index") +" type: "+ config.getProperty("es.type") );
                 // Run separate thread for client handler
-                new ClientHandler(clientSocket, config.getProperty("handler.url"), config.getProperty("handler.http_user"), config.getProperty("handler.http_pass"), config.getProperty("es.index"), config.getProperty("es.type"));
+                // new ClientHandler(clientSocket, config.getProperty("handler.url"), config.getProperty("handler.http_user"), config.getProperty("handler.http_pass"), config.getProperty("es.index"), config.getProperty("es.type"));
+                new ClientHandler(clientSocket);
             }
             catch (IOException e) {
                 System.err.println(e);
