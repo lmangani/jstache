@@ -8,7 +8,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.Properties;
 import org.apache.commons.codec.binary.Base64;
-
+import org.json.simple.*;
+import org.json.simple.parser.JSONParser;
 
 /**
  * TCP/IP client connection handler.
@@ -43,6 +44,7 @@ public class ClientHandler implements Runnable {
      * Send/Receive buffers
      */
     private static String buffers;
+    private static boolean debugme;
 
     /**
      * Client socket IN-buffer.
@@ -59,6 +61,19 @@ public class ClientHandler implements Runnable {
      */
     private Thread runningThread;
 
+    /**
+     * JSON Validation
+     */
+    public boolean isJson(String test)
+	{
+	JSONParser parser = new JSONParser();
+	try {
+	      parser.parse(test);
+	    } catch (org.json.simple.parser.ParseException e) {
+	            return false;
+	    }
+	    return true;
+	}
 
     /**
      * Properties Handler
@@ -71,6 +86,9 @@ public class ClientHandler implements Runnable {
 		es_index  = properties.getProperty("es.index", "logstash");
 		es_type   = properties.getProperty("es.type", "jstache");
 		buffers   = properties.getProperty("handler.buffers", "2");
+
+		if (!"".equals(properties.getProperty("handler.debug","on"))) { debugme = true; }
+
 	}
 
     /**
@@ -78,7 +96,6 @@ public class ClientHandler implements Runnable {
      * @param clientSocket client socket.
      * @param url 	Web-server URL.
      */
-//    public ClientHandler(Socket clientSocket, String url, String http_user, String http_pass, String es_index, String es_type) {
     public ClientHandler(Socket clientSocket) {
 
         this.clientSocket = clientSocket;
@@ -94,7 +111,7 @@ public class ClientHandler implements Runnable {
 	// Set TZ to UTC for @timestamp field
 	TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
-        System.out.println("Client connected with Address " + clientSocket.getInetAddress().toString() + " on port: " + clientSocket.getPort() + "\n");
+        if(debugme) System.out.println("Client connected with Address " + clientSocket.getInetAddress().toString() + " on port: " + clientSocket.getPort() + "\n");
 
         try {
             // System.out.println("Initializing socket buffers size ... ");
@@ -168,8 +185,8 @@ public class ClientHandler implements Runnable {
                 message = line.trim() + "\n";
 
 		// Work Socket Line-by-Line
-	        if (!message.isEmpty()) {
-	            // System.out.println("Received JSON: " + message + "\n");
+	        if (!message.isEmpty() && isJson(message) ) {
+	            if(debugme) System.out.println("Received JSON: " + message );
 		      // No @timestamp? No @problem! TODO: add as optional in config
 		      if (!message.contains("@timestamp")) {
 		    	String dateStr = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date());
@@ -182,9 +199,9 @@ public class ClientHandler implements Runnable {
 	            // System.out.println("Sending to web server ... ");
 	            sendToWebServer(message);
 	        }
-	     //   else {
-	     //        System.out.println("String is empty\n");
-	     //   }
+	        else {
+	             if(debugme) System.out.println("String empty or invalid.");
+	        }
 
             }
         }
@@ -235,7 +252,7 @@ public class ClientHandler implements Runnable {
                 result += inputLine + "\n";
             }
             in.close();
-            // System.out.print("HTTP result: " + result);
+            if(debugme) System.out.println("HTTP result: " + result);
 
             connection.disconnect();
         }
