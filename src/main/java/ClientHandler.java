@@ -87,7 +87,11 @@ public class ClientHandler implements Runnable {
 		es_type   = properties.getProperty("es.type", "jstache");
 		buffers   = properties.getProperty("handler.buffers", "2");
 
-		if (!"".equals(properties.getProperty("handler.debug","on"))) { debugme = true; }
+		if (!"".equals(properties.getProperty("handler.debug",""))) { 
+			debugme = true; 
+		} else { 
+			debugme = false; 
+		}
 
 	}
 
