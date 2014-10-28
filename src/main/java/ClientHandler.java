@@ -7,6 +7,8 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.Properties;
+import org.apache.commons.codec.binary.Base64;
+
 
 /**
  * TCP/IP client connection handler.
@@ -214,7 +216,9 @@ public class ClientHandler implements Runnable {
 
 	    if (http_user != null && !http_user.isEmpty() ) {
 	    	String pairAuth = http_user + ":" + http_pass;
-	   	String userAuth = new sun.misc.BASE64Encoder().encode(pairAuth.getBytes());
+		byte[] byteArray = Base64.encodeBase64(pairAuth.getBytes());
+		String userAuth = new String(byteArray);
+	   	//String userAuth = new sun.misc.BASE64Encoder().encode(pairAuth.getBytes());
 	    	connection.setRequestProperty("Authorization", "Basic " + userAuth);
 	    }
 
