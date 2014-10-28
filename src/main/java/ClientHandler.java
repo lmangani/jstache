@@ -34,9 +34,14 @@ public class ClientHandler implements Runnable {
     /**
      * Elasticsearch Index & Type for BULK inserts
      */
-    public static String es_index;
-    public static String es_type;
-    
+    private static String es_index;
+    private static String es_type;
+
+    /**
+     * Send/Receive buffers
+     */
+    private static String buffers;
+
     /**
      * Client socket IN-buffer.
      */
@@ -63,6 +68,7 @@ public class ClientHandler implements Runnable {
 		http_pass = properties.getProperty("handler.http_pass", "");
 		es_index  = properties.getProperty("es.index", "logstash");
 		es_type   = properties.getProperty("es.type", "jstache");
+		buffers   = properties.getProperty("handler.buffers", "2");
 	}
 
     /**
@@ -90,8 +96,8 @@ public class ClientHandler implements Runnable {
 
         try {
             // System.out.println("Initializing socket buffers size ... ");
-            clientSocket.setReceiveBufferSize(2);
-            clientSocket.setSendBufferSize(2);
+            clientSocket.setReceiveBufferSize(Integer.parseInt(buffers));
+            clientSocket.setSendBufferSize(Integer.parseInt(buffers));
 
             // System.out.println("Initializing input buffer ... ");
             in  = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
