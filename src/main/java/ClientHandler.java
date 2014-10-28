@@ -218,7 +218,6 @@ public class ClientHandler implements Runnable {
 	    	String pairAuth = http_user + ":" + http_pass;
 		byte[] byteArray = Base64.encodeBase64(pairAuth.getBytes());
 		String userAuth = new String(byteArray);
-	   	//String userAuth = new sun.misc.BASE64Encoder().encode(pairAuth.getBytes());
 	    	connection.setRequestProperty("Authorization", "Basic " + userAuth);
 	    }
 
